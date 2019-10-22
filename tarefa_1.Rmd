@@ -12,10 +12,37 @@ library(stringr)
 
 library(readr)
 battles <- read_csv("battles.csv")
-View(battles)
 
 library(readr)
 character_deaths <- read_csv("character-deaths.csv")
-View(character_deaths)
+
 ```
+
+
+```{r}
+
+#Tabela 1
+
+tabela1 <- battles %>%
+  group_by(year) %>% 
+  summarise(name = n())
+ 
+  
+?summarise
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
