@@ -1,0 +1,21 @@
+---
+title: "tarefa 1"
+author: "Diego dos Santos Fernandes"
+date: "22/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(stringr)
+
+library(readr)
+battles <- read_csv("battles.csv")
+View(battles)
+
+library(readr)
+character_deaths <- read_csv("character-deaths.csv")
+View(character_deaths)
+```
+
