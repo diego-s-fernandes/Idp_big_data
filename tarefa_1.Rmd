@@ -3,8 +3,8 @@ title: "tarefa 1"
 author: "Diego dos Santos Fernandes"
 date: "22/10/2019"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -29,18 +29,21 @@ character_deaths <- read_csv("character-deaths.csv")
 #Tabela 1
 
 tabela1 <- battles %>%
-  group_by(attacker_king) %>% 
+  group_by(attacker_king) %>%
   summarise(name = n()) %>% 
-  mutate(rel.freq = paste0(round(100 * name/sum(name), 0), "%"))
- 
+  mutate(rel.freq = paste0(round(100 * name/sum(name), 0), "%"),
+         attacker_king = replace_na(attacker_king, "Não Informado"))
+
+
 
   
-tabela1 %>%
+tabela1 <- tabela1 %>%
   rename(`Rei Agressor` = attacker_king,
          `Qtd batalhas` = name,
          `Frequencia` = rel.freq) %>% 
   kable() %>%
-  kable_styling(bootstrap_options = "striped", full_width = F)  
+  kable_styling(bootstrap_options = "striped") %>% 
+  footnote(general = "Duas Batalhas não a variável Rei Agressor Informado")
 
 
 tabela2.0 <-  battles %>%
@@ -58,27 +61,26 @@ tabela2.1 <- tabela2.1 %>%
 
 tabela2 <- tabela2.1
 
-tabela2 %>% 
+tabela2 <- tabela2 %>% 
   rename(`Rei Agressor` = attacker_king,
          `Derrotas` = loss,
          `Vitórias` = win) %>% 
   kable() %>%
-    kable_styling(bootstrap_options = "striped", full_width = F)  
+    kable_styling(bootstrap_options = "striped") %>% 
+    footnote(general = "Retirou-se duas batalhas que não continha o Rei Agressor")
 
-tabela2dt <- as.data.frame(tabela2)
-#a
+
+
 
 ```
 
 
-
-
-
-
 ```{r}
 
+tabela1
+tabela2
 
-
+```
 
 
 
