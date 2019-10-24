@@ -74,6 +74,9 @@ tabela2 <- tabela2 %>%
 
 ```
 
+## tabelas Finais
+
+Depois da limpeza dos dados, separamos as duas tabelas formatadas
 
 ```{r}
 
@@ -83,6 +86,11 @@ tabela2
 ```
 
 
+# Segunda Bade de dados
+
+```{r}
+
+```
 
 
 
