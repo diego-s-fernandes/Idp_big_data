@@ -13,13 +13,15 @@ library(tidyverse)
 library(stringr)
 library(stargazer)
 library(kableExtra)
+library(janitor)
 
 
 library(readr)
 battles <- read_csv("battles.csv")
 
 library(readr)
-character_deaths <- read_csv("character-deaths.csv")
+deaths <- read_csv("character-deaths.csv")
+
 
 ```
 
@@ -89,8 +91,42 @@ tabela2
 # Segunda Bade de dados
 
 ```{r}
+deaths_T1 <- deaths %>% 
+  select(Name, Allegiances, Nobility) %>%
+  mutate(Nobility = recode(Nobility,
+                                    "1" = "Nobre",  
+                                    "0" = "Pebleu")) %>% 
+  group_by(Allegiances, Nobility) %>%
+  summarise(n_mortos= n()) %>%
+  spread(Nobility,n_mortos) %>% 
+   kable() %>%
+    kable_styling(bootstrap_options = "striped") %>% 
+    footnote(general = "253 mortos não estão associado a nehuma classe")
+
+
+deaths_T1
+
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
