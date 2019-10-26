@@ -17,11 +17,17 @@ library(stargazer)
 
 ```{r}
 
-micro_dados_salario <- read.csv("micro_dados_salario.csv")
+df <- read.csv("micro_dados_salario.csv")
 
 
 ```
 
+```{r}
+df <- df %>%  select(-X)
+
+df <- df %>% filter(rem_med_r > 0) %>%  na.omit() %>% distinct()
+
+?na.omit
 
 
 
