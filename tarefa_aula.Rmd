@@ -1,0 +1,30 @@
+---
+title: "Exercicios em aula"
+author: "Diego dos Santos Fernandes"
+date: "26/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readr)
+library(stargazer)
+```
+
+#Exercício em sala
+
+```{r}
+
+micro_dados_salario <- read.csv("micro_dados_salario.csv")
+
+
+```
+
+
+
+
+
+
+
