@@ -11,23 +11,105 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readr)
 library(stargazer)
+library(kableExtra)
+library(ggplot2)
+
+
 ```
 
 #Exercício em sala
 
 ```{r}
-
+# dados da Rais do Acre
 df <- read.csv("micro_dados_salario.csv")
 
 
 ```
 
 ```{r}
+# retirando dados faltantes e linhas iguais
+
 df <- df %>%  select(-X)
 
 df <- df %>% filter(rem_med_r > 0) %>%  na.omit() %>% distinct()
 
-?na.omit
+```
+
+
+
+```{r}
+# tranformando categorias na Rais
+
+df <- df %>% mutate(genero = recode_factor(genero, `1` = "Homem", `2` = "Mulher"),
+                                           raca_cor = recode_factor(raca_cor, `1` = "Indígena", `2` = "Branca", `4` = "Preta",`6` = "Amarela", `8` = "Parda"), 
+                                           grau_instr = recode_factor(grau_instr,
+`1` = "Até fundamental completo", `2` = "Até fundamental completo",
+`3` = "Até fundamental completo", `4` = "Até fundamental completo",
+`5` = "Até fundamental completo", `6` = "Até médio completo", `7` = "Até médio completo",
+`8` = "Até médio completo", `9` = "Superior completo", `10` = "Superior completo",
+`11` = "Superior completo", ))
+
+```
+ 
+
+```{r}
+# retirando a população Indígena
+
+df<- df %>% filter(raca_cor!="Indígena")
+## converter para salário diario
+df<- df %>% mutate(wage= rem_med_r/30) %>%
+filter(rem_med_r>500 & rem_med_r <10000)
+#### Usar group_by para analisar os dados
+df %>% group_by(grau_instr) %>%
+summarise (n= n(), wage_medio= mean(wage)) %>% 
+  kable( format = "markdown") 
+   
+
+
+
+```
+
+```{r}
+#grafico 1
+
+ggplot(df, aes( x = raca_cor, fill = genero))+
+  geom_bar()+
+  theme_minimal()+
+  labs(
+    x = "Raça/Cor", 
+    title = "Distribuição de gênero e raça na amostra",
+    subtitle = "Gênero",
+    y = "Contagem"
+  )
+
+
+```
+
+
+
+```{r}
+#Grafico 2
+
+ggplot(df, aes( x = raca_cor, fill = grau_instr))+
+  geom_bar()+
+  theme_minimal()+
+  labs(
+    x = "Raça/Cor", 
+    title = "Distribuição de gênero e raça na amostra",
+    subtitle = "Grau de instrução",
+    y = "Contagem"
+  )
+
+```
+
+
+
+
+
+
+
+
+
 
 
 
