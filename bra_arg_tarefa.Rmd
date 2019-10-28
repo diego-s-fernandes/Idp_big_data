@@ -1,0 +1,87 @@
+---
+title: "Exercicios em aula"
+author: "Diego dos Santos Fernandes"
+date: "26/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readr)
+library(stargazer)
+library(kableExtra)
+library(ggplot2)
+library(ggthemes)
+
+```
+
+
+```{r}
+ba <- read_csv("BrasilArgentinaFutebol.csv")
+ 
+ba <-  ba %>%  mutate( GolAcumBRA = cumsum(Brasil))
+ba <-  ba %>%  mutate( GolAcumARG = cumsum(Argentina))
+ba<- ba %>% mutate(vt_br= if_else( Brasil == Argentina, "Empate", if_else(Brasil > Argentina, "Vitória","Derrota")))
+ba <- ba %>% mutate(saldo_pj = Argentina - Brasil)
+
+```
+
+
+```{r}
+
+# gráficos da tabela em aula
+
+# Gráfico 1
+
+g1 <- ba %>% 
+  filter(tournament  %in% c("FIFA World Cup qualification", "Copa América", "Friendly", "FIFA World Cup" )) %>% 
+  group_by(tournament, vt_br) %>% 
+  summarise(qts = n())
+
+
+g1 %>% 
+  ggplot(aes(x = reorder(tournament,qts), y = qts, fill = vt_br))+
+  geom_bar(stat="identity", position = "dodge2")+
+  scale_y_continuous(breaks = seq (0,15,1))+
+    labs(
+    title = "Resultado dos jogos por torneio",
+    y = "Quantidade de jogos por torneio",
+    x = "Torneio",
+    caption = " Alguns campeonatos foram retirados para melhorar a visualização do Gráfico") +   theme_clean()
+
+ 
+  
+
+
+
+```
+
+
+```{r}
+
+# Gráfico 2
+  
+ba %>% 
+  ggplot(aes(x = year))+
+  geom_line( aes( y = GolAcumARG), color = "darkred")+
+  geom_line(aes(y = GolAcumBRA), color = "steelblue", linetype="twodash")+
+  labs(
+  title = "Saldo Acumulado ao Longo dos anos",
+    y = "Quantidade de gols acumulados",
+    x = "Ano")+
+  theme_tufte()
+
+
+```
+
+
+
+
+
+
+
+
+
+
