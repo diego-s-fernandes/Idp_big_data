@@ -1,0 +1,101 @@
+---
+title: "Big Data e Análise Econômica"
+subtitle: "Plotly"
+#output: beamer_presentation
+output: html_document
+#output: ioslides_presentation
+date: "`r Sys.Date()`"
+author: Leonardo Monasterio
+email: leonardo.monasterio@gmail.com
+theme: "Warsaw"
+incremental: true
+
+fontsize: 11pt
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.height = 4, fig.width = 7)
+```
+
+
+
+# Mapas no R
+
+Carregar os pacotes
+===========================================
+```{r eval=T, echo=T, message=T, warning=FALSE, tidy=TRUE}
+rm(list = ls()) # remover os objetos
+gc() # recolher o lixo "garbage collect"
+library(geobr) # pacote para ler os municipios brasileiros
+library(tidyverse)
+library(janitor)
+library(RCurl)
+library(readxl)
+library(sf)
+library(leaflet) # for interactive maps
+library(mapview) # for interactive maps
+
+# https://geocompr.robinlovelace.net/adv-map.html
+
+```
+
+
+ Ler mapas dos municipios de MG
+===========================================
+```{r eval=T, echo=F, message=F, warning=FALSE, tidy=TRUE, cache=F}
+
+mun <- read_municipality(code_muni="MG", year=2018)
+uf <- read_state(code_state ="MG", year=2018)
+
+# ler os dados do IDH novamente
+url <- "http://atlasbrasil.org.br/2013/data/rawData/atlas2013_dadosbrutos_pt.xlsx"
+destfile <- "atlas2013_dadosbrutos_pt.xlsx"
+curl::curl_download(url, destfile)
+df <- read_excel(destfile, sheet = "MUN 91-00-10") %>%
+  clean_names() %>% 
+  filter(ano==2010 & uf=="31") %>%
+  rename(code_muni=codmun7)
+
+#df <- read_excel(destfile, sheet = "MUN 91-00-10") %>%  rename(code_muni=Codmun7)
+```
+
+
+Juntar os dados
+===========================================
+```{r eval=T, echo=F, message=F, warning=FALSE, tidy=TRUE}
+
+mun <- mun  %>% st_sf() %>%   full_join(df, by = "code_muni")
+
+#Tornar o arquivo mais leve
+mun <-simplify(mun)
+
+```
+
+Primeiro mapa
+===========================================
+```{r eval=T, echo=F, message=T, warning=T, tidy=TRUE}
+
+mapa<- mun %>% ggplot() +
+  geom_sf(aes(fill = idhm,  label=municipio), colour=NA) +
+  ggtitle("IDH") +
+  theme_minimal()
+
+mapa
+```
+
+
+
+```{r eval=T, echo=T, message=F, warning=FALSE, tidy=TRUE, cache=TRUE}
+library(plotly)
+library(widgetframe)
+ggplotly(mapa) %>%
+  highlight(
+    "plotly_hover",
+    selected = attrs_selected(line = list(color = "black"))
+) %>%
+widgetframe::frameWidget()
+
+```
+

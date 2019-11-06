@@ -1,0 +1,126 @@
+---
+title: "aula 5 de novembro"
+author: "Diego dos Santos Fernandes"
+date: "05/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+library(readxl)
+library(GGally)
+#webscreping da página
+# url <- "http://atlasbrasil.org.br/2013/data/rawData/atlas2013_dadosbrutos_pt.xlsx"
+# destfile <- "atlas2013_dadosbrutos_pt.xlsx"
+# curl::curl_download(url, destfile)
+# df <- read_excel(destfile, sheet = "MUN 91-00-10") %>% clean_names()
+```
+
+#Automatização e criação de gráfico
+
+```{r}
+# Gráfico de Densidade
+
+df %>% ggplot() + geom_density(aes(x = idhm, group = ano, fill = factor(ano)),
+alpha = 0.5) + theme_minimal()
+
+# Problema: o arquivo tem 237 variáveis
+#Solução slecionar as variáveis de interesse
+
+df <- df %>% clean_names() %>% select(ano, uf, codmun6, codmun7, gini, municipio,
+espvida, e_anosestudo, rdpc, pop) %>% filter(ano == "2010")
+# transformar algumas numericas como caracteres
+df <- df %>% mutate_at(vars(ano, uf, codmun6, codmun7), as.character)
+
+# ggpairs
+
+df %>% select_if(is.numeric) %>% ggpairs(aes(alpha = 0.2))
+
+# ggpairs por dois estados
+df %>% 
+  mutate(pop = log(pop))%>% 
+  select(uf, espvida, rdpc, pop) %>% 
+  filter(uf == "21" | uf == "42") %>%
+ggpairs(aes(alpha = 0.2, colour = uf))
+
+
+# Criação de múltiplos gráficos com loops
+
+df <- df %>% select(uf, e_anosestudo, espvida, rdpc, pop, gini) %>% filter(uf ==
+"21" | uf == "42")
+
+estados <- as.character(unique(df$uf)) # cria lista com uf
+for (i in seq_along(estados)) {
+d <- df %>% filter(uf == estados[i])
+g <- ggpairs(d, aes(alpha = 0.2)) + ggtitle(paste0("UF= ", estados[i]))
+ggsave(g, filename = paste("pair", estados[i], ".png", sep = ""))
+print(g)
+}
+
+# gráfico com o ggplot
+for (i in seq_along(estados)) {
+d <- df %>% filter(uf == estados[i])
+g <- ggplot() + geom_density(aes(x = d$rdpc)) + ggtitle(paste0("UF= ", estados[i]))
+print(g)
+}
+
+#  O poder de puur
+# código compacto
+
+df_nested <- df %>% group_by(uf) %>% select(uf, espvida, rdpc, pop, e_anosestudo,
+gini) %>% nest()
+
+
+
+
+```
+
+# Mapas
+
+está em outro documento
+
+
+#Outros pontos de regressão
+
+## Causalidade
+
+
+se A -> B
+Se não A -> não B
+
+#### variáveis counfoundings ( confundidora)
+
+Experimentos quase naturais uma vez que aleatorização é impossível em alguns casos
+raros são experimentos em laboratórios
+
+
+
+
+
+```{r}
+
+
+```
+
+
+## Devo controlar por tudo
+```{r}
+
+```
+
+## Regressão com Big Data
+
+```{r}
+
+```
+
+
+
+
+
+
+
+

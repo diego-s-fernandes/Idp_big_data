@@ -49,7 +49,9 @@ g1 %>%
     title = "Resultado dos jogos por torneio",
     y = "Quantidade de jogos por torneio",
     x = "Torneio",
-    caption = " Alguns campeonatos foram retirados para melhorar a visualização do Gráfico") +   theme_clean()
+    caption = " Alguns campeonatos foram retirados para melhorar a visualização do Gráfico") +   theme_clean()+
+  coord_flip()
+
 
  
   
