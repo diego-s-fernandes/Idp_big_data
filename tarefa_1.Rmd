@@ -14,6 +14,7 @@ library(stringr)
 library(stargazer)
 library(kableExtra)
 library(janitor)
+library(summarytools)
 
 
 library(readr)
@@ -106,6 +107,7 @@ deaths_T1 <- deaths %>%
 
 deaths_T1
 
+view(dfSummary(deaths))
 
 ```
 
