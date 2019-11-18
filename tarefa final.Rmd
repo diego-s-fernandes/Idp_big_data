@@ -1,0 +1,60 @@
+---
+title: "tarefa final"
+author: "Diego dos Santos Fernandes"
+date: "17/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+
+library(WDI)
+```
+
+
+```{r}
+
+WDIsearch("Foreign direct investment")
+
+WDIsearch("OCDE")
+
+
+
+FDI <- WDI( indicator = c("IC.BUS.EASE.DFRN.XQ.DB1719","BX.KLT.DINV.CD.WD"  ),start=2016, end= 2019, extra = TRUE)
+
+
+FDI <- FDI %>% 
+  rename(db = IC.BUS.EASE.DFRN.XQ.DB1719, fdi = BX.KLT.DINV.CD.WD)
+
+FDI <-  FDI %>%
+  mutate(log_fdi = log(fdi), db = round(db,2)) %>% 
+  
+  filter(complete.cases(fdi, db)) %>% 
+   na.omit()
+ 
+ 
+
+  
+
+FDI %>% 
+  ggplot(aes(x = db , y =log_fdi))+
+  geom_smooth(method = "lm")+
+  geom_point(aes(color = income))
+
+
+FDI %>% 
+  ggplot(aes(x = db , y =log_fdi))+
+  geom_smooth(method = "lm")+
+  geom_point(aes(color = region))
+
+  
+
+
+# https://github.com/vincentarelbundock/WDI
+# https://cengel.github.io/gearup2016/worldbank.html
+
+```
+
