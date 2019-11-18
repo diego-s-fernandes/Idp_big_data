@@ -10,51 +10,184 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(janitor)
-
+library(gganimate)
 library(WDI)
+
 ```
 
-
+# Tratamento dos dados
 ```{r}
 
 WDIsearch("Foreign direct investment")
+WDIsearch("Doing Business")
 
 WDIsearch("OCDE")
 
+pdi_pib <- WDI( indicator = "BX.KLT.DINV.WD.GD.ZS")
 
-
-FDI <- WDI( indicator = c("IC.BUS.EASE.DFRN.XQ.DB1719","BX.KLT.DINV.CD.WD"  ),start=2016, end= 2019, extra = TRUE)
-
+FDI <- WDI( indicator = c("IC.BUS.EASE.DFRN.XQ.DB1719","IC.BUS.EASE.DFRN.DB16","IC.BUS.EASE.DFRN.DB15", "IC.BUS.EASE.DFRN.DB1014", "BX.KLT.DINV.WD.GD.ZS", "BX.KLT.DINV.CD.WD" ),start=2010, end= 2019, extra = TRUE)
 
 FDI <- FDI %>% 
-  rename(db = IC.BUS.EASE.DFRN.XQ.DB1719, fdi = BX.KLT.DINV.CD.WD)
+  rename(DB17_19 = IC.BUS.EASE.DFRN.XQ.DB1719, DB16 = IC.BUS.EASE.DFRN.DB16, DB15 = IC.BUS.EASE.DFRN.DB15, B10_14 = IC.BUS.EASE.DFRN.DB1014, fdi = BX.KLT.DINV.CD.WD, fdi_pib = BX.KLT.DINV.WD.GD.ZS)
+
+# junção das metodologias, pois estavam em bases diferentes
+FDI$metodologia <- coalesce(FDI$DB17_19,FDI$DB16)
+FDI$metodologia2 <- coalesce(FDI$metodologia,FDI$DB15) 
+FDI$db <- coalesce(FDI$metodologia2,FDI$B10_14)
+
+FDI <- FDI %>% 
+  select(iso2c, country, year,fdi_pib, fdi, iso3c, region, longitude, latitude, income, lending, db)
+
+FDI_0 <- FDI %>%
+    mutate(log_fdi = log(fdi), db = round(db,2)) %>% 
+    filter(year >= 2014) 
 
 FDI <-  FDI %>%
   mutate(log_fdi = log(fdi), db = round(db,2)) %>% 
-  
-  filter(complete.cases(fdi, db)) %>% 
-   na.omit()
- 
- 
-
+  filter(year >= 2014) %>% 
+  na.omit()
   
 
-FDI %>% 
-  ggplot(aes(x = db , y =log_fdi))+
+```
+  
+# Gráfico estático
+  
+```{r}
+g0 <- FDI %>% 
+  filter(year == 2018) %>% 
+  ggplot(aes(x = db , y =log_fdi ))+
   geom_smooth(method = "lm")+
+  geom_text(aes(label = country), check_overlap = TRUE)+
   geom_point(aes(color = income))
+g0 
 
 
-FDI %>% 
-  ggplot(aes(x = db , y =log_fdi))+
-  geom_smooth(method = "lm")+
+
+FDI2018 <- FDI %>% 
+  filter(year == 2018)
+
+g001 <- FDI2018 %>% 
+  ggplot(aes(x = db , y =log_fdi, label = country ))+
+  geom_smooth(method = "lm", se =  FALSE)+
+  geom_text(aes(label=ifelse(country  %in% c("Brazil", "China"),as.character(country),'')), color = "black", vjust = -1, hjust = 0)+
+  geom_point(aes(color = income))+
+  geom_point(data=FDI2018[FDI2018$country == "Brazil",],size=3)+
+  labs(
+    title = "Relação FDI e DB para o ano de 2018"
+  )
+g001 
+ggsave("g001.png")
+
+g01 <- FDI %>% 
+  filter(year == 2018) %>% 
+  ggplot(aes(x = db , y =log_fdi, label = country ))+
+  geom_smooth(method = "lm", se =  FALSE)+
+  geom_text(aes(label=ifelse(country  %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),as.character(country),'')), color = "black")+
   geom_point(aes(color = region))
+g01 
+ggsave("g01.png")
 
+```
+
+
+
+#animação com o FDI em dolar
+```{r}
+
+g1 <- FDI %>% 
+  ggplot(aes(x = db , y =log_fdi, color = region))+
+  geom_point()+
+  facet_wrap(~region)+
+    transition_time(year) +
+  labs(title = 'Year: {frame_time}', x = 'Doing Business', y = 'Foreign Direct Investment (FDI)')+
+  ease_aes('linear')
+
+g1
   
+anim_save("g1.gif", g1)
 
+
+g2 <-   FDI %>% 
+  ggplot(aes(x = db , y =log_fdi, color = region))+
+  geom_point()+
+  transition_time(year) +
+  geom_text(aes(label=ifelse(country  %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),as.character(country),'')))+
+  labs(title = 'Year: {frame_time}', x = 'Doing Business', y = 'Foreign Direct Investment (FDI)')
+  
+g2
+
+
+#
+
+
+anim_save("g2.gif", g2)
+
+###
+g3 <-  FDI_0 %>% 
+  ggplot(aes(x = db , y =log_fdi, color = income))+
+  geom_point()+
+  transition_time(year) +
+   geom_text(aes(label=ifelse(country  %in% c("Brazil", "China"),as.character(country),'')))+
+   labs(title = 'Year: {frame_time}', x = 'Doing Business', y = 'Foreign Direct Investment (FDI)')+
+  ease_aes('linear')
+
+g3
+
+
+anim_save("g3.gif", g3)
+
+ 
+ 
 
 # https://github.com/vincentarelbundock/WDI
 # https://cengel.github.io/gearup2016/worldbank.html
+
+```
+
+# animação com FDI como porcentagem do pib
+
+```{r}
+g4 <- FDI %>% 
+  ggplot(aes(x = db , y = fdi_pib, color = region))+
+  geom_point()+
+  facet_wrap(~region)+
+  transition_time(year) +
+  labs(title = 'Year: {frame_time}', x = 'Doing Business', y = 'Foreign Direct Investment (FDI)')+
+  ease_aes('linear')
+
+g4
+  
+anim_save("g4.gif", g4)
+
+
+g5 <- 
+  g1 <- FDI %>% 
+  ggplot(aes(x = db , y =fdi_pib, color = region))+
+  geom_point()+
+  transition_time(year) +
+   # geom_text(aes(label = country), check_overlap = TRUE)+
+  labs(title = 'Year: {frame_time}', x = 'Doing Business', y = 'Foreign Direct Investment (FDI)')+
+  ease_aes('linear')
+g5
+
+
+
+anim_save("g5.gif", g5)
+
+g6 <- 
+  g1 <- FDI %>% 
+  ggplot(aes(x = db , y =fdi_pib, color = income))+
+  geom_point()+
+  transition_time(year) +
+   geom_text(aes(label = country), check_overlap = TRUE)+
+  labs(title = 'Year: {frame_time}', x = 'Doing Business', y = 'Foreign Direct Investment (FDI)')+
+  ease_aes('linear')
+
+
+
+
+anim_save("g6.gif", g6)
+
 
 ```
 
