@@ -178,10 +178,12 @@ g6 <-
   g1 <- FDI %>% 
   ggplot(aes(x = db , y =fdi_pib, color = income))+
   geom_point()+
+  scale_y_continuous(limits = c(0,15))+
   transition_time(year) +
-   geom_text(aes(label = country), check_overlap = TRUE)+
+  geom_text(aes(label=ifelse(country  %in% c("Brazil", "China"),as.character(country),'')), color = "black")+
   labs(title = 'Year: {frame_time}', x = 'Doing Business', y = 'Foreign Direct Investment (FDI)')+
   ease_aes('linear')
+g6
 
 
 
