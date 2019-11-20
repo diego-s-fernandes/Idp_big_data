@@ -1,0 +1,141 @@
+---
+title: "tarefa final"
+author: "Diego dos Santos Fernandes"
+date: "17/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+library(gganimate)
+library(WDI)
+library(gghighlight)
+
+```
+
+# Tratamento dos dados
+```{r}
+
+WDIsearch("Foreign direct investment")
+WDIsearch("Doing Business")
+
+WDIsearch("OCDE")
+
+pdi_pib <- WDI( indicator = "BX.KLT.DINV.WD.GD.ZS")
+
+FDI <- WDI( indicator = c("IC.BUS.EASE.DFRN.XQ.DB1719","IC.BUS.EASE.DFRN.DB16","IC.BUS.EASE.DFRN.DB15", "IC.BUS.EASE.DFRN.DB1014", "BX.KLT.DINV.WD.GD.ZS", "BX.KLT.DINV.CD.WD" ),start=2010, end= 2019, extra = TRUE)
+
+FDI <- FDI %>% 
+  rename(DB17_19 = IC.BUS.EASE.DFRN.XQ.DB1719, DB16 = IC.BUS.EASE.DFRN.DB16, DB15 = IC.BUS.EASE.DFRN.DB15, B10_14 = IC.BUS.EASE.DFRN.DB1014, fdi = BX.KLT.DINV.CD.WD, fdi_pib = BX.KLT.DINV.WD.GD.ZS)
+
+# junção das metodologias, pois estavam em bases diferentes
+FDI$metodologia <- coalesce(FDI$DB17_19,FDI$DB16)
+FDI$metodologia2 <- coalesce(FDI$metodologia,FDI$DB15) 
+FDI$db <- coalesce(FDI$metodologia2,FDI$B10_14)
+
+FDI <- FDI %>% 
+  select(iso2c, country, year,fdi_pib, fdi, iso3c, region, longitude, latitude, income, lending, db)
+
+FDI_0 <- FDI %>%
+    mutate(log_fdi = log(fdi), db = round(db,2)) %>% 
+    filter(year >= 2014) 
+
+FDI <-  FDI %>%
+  mutate(log_fdi = log(fdi), db = round(db,2)) %>% 
+  filter(year >= 2014) %>% 
+  na.omit()
+  
+
+```
+  
+# Gráfico estático
+  
+```{r}
+
+
+
+
+FDI2018 <- FDI %>% 
+  filter(year == 2018)
+
+g001 <- FDI2018 %>% 
+  ggplot(aes(x = db , y =log_fdi))+
+  geom_smooth(method = "lm", se =  FALSE)+
+  geom_text(aes(label=ifelse(country  %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),as.character(country),'')), color = "black", vjust = -1, hjust = 0)+
+  geom_point(data=FDI2018[FDI2018$country %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),], size = 3)+
+  geom_point(aes(color = income))+
+   labs(
+    title = " Destaques Relação FDI e DB para o ano de 2018",
+     x = 'Doing Business', 
+     y = 'Foreign Direct Investment (FDI)'
+     )
+  
+g001 
+
+
+g002 <- FDI2018 %>% 
+  ggplot(aes(x = db , y =log_fdi, color = country))+
+ 
+  # geom_text(aes(label=ifelse(country  %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),as.character(country),'')), color = "black", vjust = -1, hjust = 0)+
+  # geom_point(data=FDI2018[FDI2018$country %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),], size = 3)+
+  geom_point()+
+  gghighlight(country %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"))+
+
+  labs(
+    title = " Destaques Relação FDI e DB para o ano de 2018",
+     x = 'Doing Business', 
+     y = 'Foreign Direct Investment (FDI)'
+     )
+  
+g002
+
+ggsave("g002.png")
+
+g01 <- FDI %>% 
+  filter(year == 2018) %>% 
+  ggplot(aes(x = db , y =log_fdi, label = country ))+
+  geom_smooth(method = "lm", se =  FALSE)+
+  geom_text(aes(label=ifelse(country  %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),as.character(country),'')), color = "black")+
+  geom_point(aes(color = region))+
+   labs(
+    title = " Destaques Relação FDI e DB por região para o ano de 2018",
+     x = 'Doing Business', 
+     y = 'Foreign Direct Investment (FDI)'
+     )
+  
+
+
+g01 
+
+
+```
+
+
+# Animação desde com indicadores desde o ano de 2014
+
+
+```{r echo=TRUE}
+###
+g3 <-  FDI_0 %>% 
+  ggplot(aes(x = db , y =log_fdi, color = income))+
+  geom_point()+
+  transition_time(year) +
+   geom_text(aes(label=ifelse(country  %in% c("Brazil", "China"),as.character(country),'')))+
+   labs(title = 'Year: {frame_time}', x = 'Doing Business', y = 'Foreign Direct Investment (FDI)')+
+  ease_aes('linear')
+
+g3
+
+
+
+```
+
+
+
+
+
+
+
