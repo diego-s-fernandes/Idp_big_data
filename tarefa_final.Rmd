@@ -12,7 +12,6 @@ library(tidyverse)
 library(janitor)
 library(gganimate)
 library(WDI)
-library(gghighlight)
 
 ```
 
@@ -62,59 +61,30 @@ FDI2018 <- FDI %>%
   filter(year == 2018)
 
 g001 <- FDI2018 %>% 
-  ggplot(aes(x = db , y =log_fdi))+
+  ggplot(aes(x = db , y =log_fdi, label = country ))+
   geom_smooth(method = "lm", se =  FALSE)+
   geom_text(aes(label=ifelse(country  %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),as.character(country),'')), color = "black", vjust = -1, hjust = 0)+
   geom_point(data=FDI2018[FDI2018$country %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),], size = 3)+
   geom_point(aes(color = income))+
-   labs(
-    title = " Destaques Relação FDI e DB para o ano de 2018",
-     x = 'Doing Business', 
-     y = 'Foreign Direct Investment (FDI)'
-     )
-  
-g001 
-
-
-g002 <- FDI2018 %>% 
-  ggplot(aes(x = db , y =log_fdi, color = country))+
- 
-  # geom_text(aes(label=ifelse(country  %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),as.character(country),'')), color = "black", vjust = -1, hjust = 0)+
-  # geom_point(data=FDI2018[FDI2018$country %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),], size = 3)+
-  geom_point()+
-  gghighlight(country %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"))+
-
   labs(
-    title = " Destaques Relação FDI e DB para o ano de 2018",
-     x = 'Doing Business', 
-     y = 'Foreign Direct Investment (FDI)'
-     )
-  
-g002
-
-ggsave("g002.png")
+    title = "Relação FDI e DB para o ano de 2018"
+  )
+g001 
+ggsave("g001.png")
 
 g01 <- FDI %>% 
   filter(year == 2018) %>% 
   ggplot(aes(x = db , y =log_fdi, label = country ))+
   geom_smooth(method = "lm", se =  FALSE)+
   geom_text(aes(label=ifelse(country  %in% c("Brazil", "China", "India", "Russian Federation", "South Africa"),as.character(country),'')), color = "black")+
-  geom_point(aes(color = region))+
-   labs(
-    title = " Destaques Relação FDI e DB por região para o ano de 2018",
-     x = 'Doing Business', 
-     y = 'Foreign Direct Investment (FDI)'
-     )
-  
-
-
+  geom_point(aes(color = region))
 g01 
 ggsave("g01.png")
 
 ```
 
 
-# Animação desde com indicadores desde o ano de 2014
+# Animação
 
 
 ```{r}
